@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title>ChatBot Báo Giá Vận Tải</title>
+  <style>
+    body { font-family: Arial; background: #f7f7f7; }
+    #chatbox { width: 400px; margin: 40px auto; background: white; border: 1px solid #ccc; border-radius: 10px; }
+    #messages { height: 400px; overflow-y: scroll; padding: 10px; }
+    .msg { margin: 5px 0; }
+    .bot { color: #333; }
+    .user { text-align: right; color: blue; }
+    #input { display: flex; }
+    input { flex: 1; padding: 10px; border: none; border-top: 1px solid #ccc; }
+    button { padding: 10px; border: none; background: #007bff; color: white; cursor: pointer; }
+    button:hover { background: #0056b3; }
+  </style>
+</head>
+<body>
+  <div id="chatbox">
+    <div id="messages"></div>
+    <div id="input">
+      <input id="userInput" type="text" placeholder="Nhập tin nhắn...">
+      <button onclick="sendMessage()">Gửi</button>
+    </div>
+  </div>
+
+  <script>
+    const steps = [
+      "Loại hàng hóa của bạn là gì?",
+      "Điểm nhận hàng ở đâu?",
+      "Điểm giao hàng ở đâu?",
+      "Số kilomet dự kiến?",
+      "Kích thước, số kiện hàng?",
+      "Trọng lượng (tấn)?"
+    ];
+    let answers = {};
+    let stepIndex = 0;
+
+    function addMessage(sender, text) {
+      let msgDiv = document.createElement("div");
+      msgDiv.className = "msg " + sender;
+      msgDiv.innerText = text;
+      document.getElementById("messages").appendChild(msgDiv);
+      document.getElementById("messages").scrollTop = document.getElementById("messages").scrollHeight;
+    }
+
+    function sendMessage() {
+      let input = document.getElementById("userInput");
+      let text = input.value.trim();
+      if (!text) return;
+      addMessage("user", text);
+
+      answers[stepIndex] = text;
+      input.value = "";
+
+      stepIndex++;
+      if (stepIndex < steps.length) {
+        addMessage("bot", steps[stepIndex]);
+      } else {
+        // Gọi API báo giá khi đủ dữ liệu
+        fetch("https://your-api.onrender.com/baogia", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            loaihang: answers[0],
+            diemnhan: answers[1],
+            diemgiao: answers[2],
+            km: answers[3],
+            sokien: answers[4],
+            trongluong: answers[5]
+          })
+        })
+        .then(res => res.json())
+        .then(data => {
+          addMessage("bot", "👉 Báo giá dự kiến: " + data.gia.toLocaleString() + " VND");
+        });
+      }
+    }
+
+    window.onload = function() {
+      addMessage("bot", steps[stepIndex]);
+    }
+  </script>
+</body>
+</html>
