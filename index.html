@@ -59,7 +59,7 @@
         addMessage("bot", steps[stepIndex]);
       } else {
         // Gọi API báo giá khi đủ dữ liệu
-        fetch("https://your-api.onrender.com/baogia", {
+        fetch("https://ghn-baogia.onrender.com", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
